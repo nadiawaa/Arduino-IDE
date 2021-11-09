@@ -3,7 +3,6 @@
 
 #include <OneWire.h> //adc
 #include <DallasTemperature.h> //DS18B20 sensor suhu
-#include <NewPing.h> //SR04T sensor ultrasonic
 
 #include <SoftwareSerial.h>
 SoftwareSerial mcu(D1,D2);  //komunikasi serial antara arduino dan nodemcu
