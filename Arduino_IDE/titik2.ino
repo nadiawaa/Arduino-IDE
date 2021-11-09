@@ -6,23 +6,17 @@
 #include <NewPing.h> //SR04T sensor ultrasonic
 
 #include <SoftwareSerial.h>
-SoftwareSerial mcu(D1,D2);
+SoftwareSerial mcu(D1,D2); //komunikasi serial arduino nodemcu
 
 
 
-#define FIREBASE_HOST "my-i-pond-default-rtdb.asia-southeast1.firebasedatabase.app"
-#define FIREBASE_AUTH "VqaLWbyEY9nEly5jyO3NZjAotLkAXHMfmRzXN0b5"
-#define WIFI_SSID "Abhyasa"
-#define WIFI_PASSWORD "DRA012108"
-/*
- # This sample code is used to test the pH meter V1.0.
- # Editor : YouYou
- # Ver    : 1.0
- # Product: analog pH meter
- # SKU    : SEN0161
-*/
+#define FIREBASE_HOST "firebase host"
+#define FIREBASE_AUTH "firebase auth"
+#define WIFI_SSID "ssid"
+#define WIFI_PASSWORD "pwd"
 
-#define ONE_WIRE_BUS D4//2 //Suhu D2
+
+#define ONE_WIRE_BUS D4 //suhu D4
 #define trigPin D5 //Ultrasonic Trig D3
 #define echoPin D6 //Ultrasonic Echo D4
 #define MAX_DISTANCE 400 //Jarak maks Ultrasonic
@@ -75,7 +69,7 @@ void loop(void)
   delay(50);
 
    
-mcu.write("mcu");
+mcu.write("mcu");  //nodemcu menerima data dari arduino
 if (mcu.available()>0)
 {
   
