@@ -2,7 +2,7 @@
 #include <OneWire.h> //adc
 
 
-#define TD A2//noteini haruse pin analog
+#define TD A2    //turbidity pin A2
 #define SensorPin A0            //pH meter Analog output to Arduino Analog Input 0
 #define Offset 0.00            //deviation compensate
 #define samplingInterval 20
@@ -11,7 +11,7 @@
 
 
 
-SoftwareSerial uno(2,3);
+SoftwareSerial uno(2,3); //komunikasi serial dengan nodemcu
 
 
 
