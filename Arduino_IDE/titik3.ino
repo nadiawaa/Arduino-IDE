@@ -6,29 +6,23 @@
 #include <NewPing.h> //SR04T sensor ultrasonic
 
 #include <SoftwareSerial.h>
-SoftwareSerial mcu(D1,D2);
+SoftwareSerial mcu(D1,D2);  //komunikasi serial antara arduino dan nodemcu
 
 
 
-#define FIREBASE_HOST "my-i-pond-default-rtdb.asia-southeast1.firebasedatabase.app"
-#define FIREBASE_AUTH "VqaLWbyEY9nEly5jyO3NZjAotLkAXHMfmRzXN0b5"
-#define WIFI_SSID "Abhyasa"
-#define WIFI_PASSWORD "DRA012108"a
-/*
- # This sample code is used to test the pH meter V1.0.
- # Editor : YouYou
- # Ver    : 1.0
- # Product: analog pH meter
- # SKU    : SEN0161
-*/
+#define FIREBASE_HOST "firebase host"
+#define FIREBASE_AUTH "firebase auth"
+#define WIFI_SSID "WIFISSID"
+#define WIFI_PASSWORD "WIFIPWD"
 
-#define ONE_WIRE_BUS D4//2 //Suhu D2
+#define ONE_WIRE_BUS D4 //Suhu D4
 
 OneWire oneWire(ONE_WIRE_BUS); // Setup a oneWire instance to communicate with any OneWire device    
 DallasTemperature sensors(&oneWire); // Pass oneWire reference to DallasTemperature library
 
 int pHValue;
 int kekeruhan;
+
 void setup(void)
 {
   Serial.begin(9600);
