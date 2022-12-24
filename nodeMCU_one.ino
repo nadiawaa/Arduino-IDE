@@ -109,7 +109,6 @@ void readData()
 
 void sendData_to_firebase(String name, float data)
 {
-
     // Set data value to the corresponding data name in Firebase
     Firebase.setFloat("node_one/" + name, value);
 }
