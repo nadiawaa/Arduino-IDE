@@ -1,89 +1,144 @@
-#include <ESP8266WiFi.h> 
-#include <FirebaseArduino.h>
+#include <ESP8266WiFi.h>       // library for WiFi connection
+#include <FirebaseArduino.h>   // library for connecting to Firebase
+#include <OneWire.h>           // library for temperature sensors
+#include <DallasTemperature.h> // library for temperature sensors
+#include <NewPing.h>           // library for SR04T ultrasonic sensor
+#include <SoftwareSerial.h>    // library for serial communication with the microcontroller
 
-#include <OneWire.h> //adc
-#include <DallasTemperature.h> //DS18B20 sensor suhu
-#include <NewPing.h> //SR04T sensor ultrasonic
+#define FIREBASE_HOST "firebasehost" // Firebase hosts
+#define FIREBASE_AUTH "firebaseauth" // Firebase authentication code
+#define WIFI_SSID "ssid"             // Wi-Fi name
+#define WIFI_PASSWORD "pwd"          // WiFi passwords
 
-#include <SoftwareSerial.h>
-SoftwareSerial mcu(D1,D2); //komunikasi serial arduino nodemcu
+// Define the connections for various sensors and the microcontroller
+#define ONE_WIRE_BUS D4 // Temperature sensor connection pin
+#define TRIG_PIN D5     // Trigger pin for ultrasonic sensor
+#define ECHO_PIN D6     // Echo pin for ultrasonic sensor
+#define RX_PIN D1       // RX pin for software serial communication
+#define TX_PIN D2       // TX pin for software serial communication
 
+// Define the maximum distance for the ultrasonic sensor
+#define MAX_DISTANCE 400
 
+// Create an object for the ultrasonic sensor with the specified trigger, echo, and maximum distance
+NewPing sonar = NewPing(TRIG_PIN, ECHO_PIN, MAX_DISTANCE);
 
-#define FIREBASE_HOST "firebase host"
-#define FIREBASE_AUTH "firebase auth"
-#define WIFI_SSID "ssid"
-#define WIFI_PASSWORD "pwd"
+// Create object for software serial communication
+SoftwareSerial portSerial(pinRX, pinTX);
 
+// Temperature sensor initialization
+OneWire oneWire(ONE_WIRE_BUS);
+DallasTemperature sensors(&oneWire);
 
-#define ONE_WIRE_BUS D4 //suhu D4
-#define trigPin D5 //Ultrasonic Trig D3
-#define echoPin D6 //Ultrasonic Echo D4
-#define MAX_DISTANCE 400 //Jarak maks Ultrasonic
-NewPing sonar = NewPing(trigPin, echoPin, MAX_DISTANCE);
+// Declare variables for sensor data
+String name;
+float value;
 
-OneWire oneWire(ONE_WIRE_BUS); // Setup a oneWire instance to communicate with any OneWire device    
-DallasTemperature sensors(&oneWire); // Pass oneWire reference to DallasTemperature library
+void sendData_to_firebase(String name, float data);
+void measureTemp();
+void readData();
+void measureDistance();
 
-int pHValue;
-int kekeruhan;
-void setup(void)
+void setup()
 {
-  Serial.begin(9600);
-  mcu.begin(9600);
-  // connect to wifi.
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  Serial.print("connecting");
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.print(".");
-    delay(500);
+    // Start serial communication with baud rate of 9600
+    Serial.begin(9600);
+
+    // Initialize software serial with baud rate of 9600
+    portSerial.begin(9600);
+
+    // Connect to WiFi using the defined SSID and password
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+
+    // Print message to serial monitor and wait until WiFi connection is established
+    Serial.print("Connecting to WiFi");
+    while (WiFi.status() != WL_CONNECTED)
+    {
+        // Print "." every 500ms until WiFi is connected
+        Serial.print(".");
+        delay(500);
     }
-  Serial.println();
-  Serial.print("connected: ");
-  Serial.println(WiFi.localIP());
- 
-  
-  Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
 
+    // Print message to serial monitor once WiFi is connected
+    Serial.println();
+    Serial.print("Connected to WiFi: ");
+    Serial.println(WiFi.localIP());
+
+    // Connect to Firebase using the defined host and authentication code
+    Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
 }
 
-void loop(void)
+void loop()
 {
-
-
-
-//Temperature
-  sensors.requestTemperatures();   
-    Serial.print("Temperature  : ");  
-    Serial.print(sensors.getTempCByIndex(0)); 
-    Serial.println(" C"); 
-    Firebase.setFloat("titik2/suhu", sensors.getTempCByIndex(0));
-  delay(50); 
-
-//Ultrasonic
-  int jarak = sonar.ping_cm();
-    Serial.print("Jarak        : ");
-    Serial.print(jarak);
-    Serial.println("cm");
-    Firebase.setFloat("titik2/jarak", jarak);
-  delay(50);
-
-   
-mcu.write("mcu");  //nodemcu menerima data dari arduino
-if (mcu.available()>0)
-{
-  
-
-//ph
-  pHValue=mcu.read();
-    Serial.print("pH value: ");
-    Serial.println(pHValue);
-    Firebase.setFloat("titik2/ph", pHValue);
-
-//turbidity
-  kekeruhan=mcu.read();
-    Serial.print("turbidity: ");
-    Serial.println(kekeruhan);
-    Firebase.setFloat("titik2/turbidity", kekeruhan);
+    measureTemp();
+    measureDistance();
+    readData();
 }
+
+void measureTemp()
+{
+    // Request the temperature sensor to measure the current temperature
+    sensors.requestTemperatures();
+
+    // Print the string "Temperature : " to the serial port
+    Serial.print("Temperature  : ");
+
+    // Print the current temperature value to the serial port
+    Serial.print(sensors.getTempCByIndex(0));
+
+    // Set the value of the "name" variable to the string "Temperature"
+    name = "Temperature";
+
+    // Send the current temperature data to Firebase
+    sendData_to_firebase(name, sensors.getTempCByIndex(0));
+
+    // Wait for 50 milliseconds
+    delay(50);
+}
+
+// This function measures the distance using an ultrasonic sensor and sends the data to Firebase
+void measureDistance()
+{
+    // Use the sonar object to get the distance in centimeters
+    int distance = sonar.ping_cm();
+
+    // Print the distance to the serial monitor
+    Serial.print("Distance: ");
+    Serial.print(distance);
+
+    // Set the name of the data to "Distance"
+    name = "Distance";
+
+    // Send the distance to Firebase using the sendData_to_firebase function
+    sendData_to_firebase(name, distance);
+
+    // Delay for 50 milliseconds
+    delay(50);
+}
+
+void readData()
+{
+    // Send request to Arduino
+    portSerial.write("from NodeMCU");
+
+    // Check if there is data available from Arduino
+    if (portSerial.available() > 0)
+    {
+        // Read data from NodeMCU
+        name = portSerial.read();
+        value = portSerial.read();
+
+        // Print data name and value to the serial monitor
+        Serial.print(name + " value: ");
+        Serial.println(value);
+
+        // Send the current temperature data to Firebase
+        sendData_to_firebase(name, value);
+    }
+}
+
+void sendData_to_firebase(String name, float data)
+{
+    // Set data value to the corresponding data name in Firebase
+    Firebase.setFloat("node_two/" + name, value);
 }

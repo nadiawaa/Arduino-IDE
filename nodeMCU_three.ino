@@ -26,9 +26,10 @@ String name;
 float value;
 
 void sendData_to_firebase(String name, float data);
-void measureTemp() void readData()
+void measureTemp();
+void readData();
 
-    void setup()
+void setup()
 {
     // Start serial communication with baud rate of 9600
     Serial.begin(9600);
@@ -60,6 +61,7 @@ void measureTemp() void readData()
 void loop()
 {
     measureTemp();
+    readData();
 }
 
 void measureTemp()
@@ -78,9 +80,6 @@ void measureTemp()
 
     // Send the current temperature data to Firebase
     sendData_to_firebase(name, sensors.getTempCByIndex(0));
-
-    // Call readData function
-    readData();
 
     // Wait for 50 milliseconds
     delay(50);
