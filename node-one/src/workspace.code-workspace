@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"name": "noded-two",
+			"path": "../../noded-two"
+		}
+	],
+	"settings": {}
+}
