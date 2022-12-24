@@ -1,25 +1,37 @@
-#include <SoftwareSerial.h>
-#include <OneWire.h> 
+#include <SoftwareSerial.h> // Library for software serial
+#include <OneWire.h> // Library for 1-Wire devices
 
-// Define connections pin to sensor and mikrocontroler
-#define TurbidityPin A2
-#define pHPin A0
-int pinRX = 2;
-int pinTX = 3;
+// Define pin connections for sensors and microcontroller
+#define TurbidityPin A2 // Pin for turbidity sensor
+#define pHPin A0 // Pin for pH sensor
+int pinRX = 2; // RX pin for software serial
+int pinTX = 3; // TX pin for software serial
 
-#define Offset 0.00  // deviation compensate
-#define samplingInterval 20
-#define printInterval 800
-#define ArrayLenth 40 // times of collection
+// Define constants for sensor calibration and interval times
+#define Offset 0.00 // Deviation compensate value
+#define samplingInterval 20 // Interval time for pH sensor sampling in milliseconds
+#define printInterval 800 // Interval time for printing pH data in milliseconds
+#define ArrayLength 40 // Number of times to collect pH data for averaging
 
-// Object to represent software serial ports
+// Create object for software serial communication
 SoftwareSerial portSerial(pinRX, pinTX);
 
-// Declare a variable to store the average value of the sensor feedback
-int pHArray[ArrayLenth];
+// Declare variables for sensor data
+float voltageTBD, turbidity, voltagepH, pHValue, data;
 
-//Declare a variable to store the counter of sensor
+// Declare array to store pH sensor data for averaging
+int pHArray[ArrayLength];
+
+// Declare variable to store index of current pH data in array
 int pHArrayIndex = 0;
+
+// Declare functions
+void sendData(float data);
+void measurepH();
+void measureTurbidity();
+void printData(String name, float voltageData, float data);
+double averageArray(int *arr, int number);
+
 
 void setup()
 {
@@ -30,79 +42,109 @@ void setup()
   Serial.begin(9600);
 }
 
-void TBDsensor(){
+void loop()
+{
+  // Measure and send pH data
+  measurepH();
+
+  // Measure and send turbidity data
+  measureTurbidity();
+}
+
+void measureTurbidity()
+{
   // Read raw data from turbidity sensor
   int rawDataTBD = analogRead(A2);
 
-  // Proccess raw data
-  static float voltageTBD = rawDataTBD * (5.0 / 1024);
-  static float turbidity = 100.00 - (voltageTBD / 4.33) * 100.00;
+  // Process the raw data to calculate the turbidity level
+  voltageTBD = rawDataTBD * (5.0 / 1024);
+  turbidity = 100.00 - (voltageTBD / 4.33) * 100.00;
 
-  // Print on monitor
-  Serial.print(voltageTBD);
-  Serial.print(" , ");
-  Serial.print("raw data TBD : ");
-  Serial.print(rawDataTBD);
-  Serial.print(" , ");
-  Serial.print("data TBD : ");
-  Serial.print(turbidity);
-  Serial.println(" NTU");
-  delay(500);
+  // Print the processed data to the monitor
+  printData("Turbidity", voltageTBD, turbidity);
 
+  // Send the processed data to the NodeMCU
+  sendData(turbidity);
 }
 
-void pHsensor(){
-  // Define time to read data
+void measurepH()
+{
+  // Declare variables to store the current time and the time when data was last read and printed
   static unsigned long samplingTime = millis();
   static unsigned long printTime = millis();
 
+  // Check if it is time to read new data from the sensor
   if (millis() - samplingTime > samplingInterval)
   {
+    // Read and process pH sensor data
     pHArray[pHArrayIndex++] = analogRead(pHPin);
     if (pHArrayIndex == ArrayLenth)
       pHArrayIndex = 0;
 
-    static float voltagepH = avergearray(pHArray, ArrayLenth) * 5 / 1024;
-    static float pHValue = 3.5 * voltagepH + Offset;
+    voltagepH = averageArray(pHArray, ArrayLenth) * 5 / 1024;
+    pHValue = 3.5 * voltagepH + Offset;
 
+    // Update the sampling time
     samplingTime = millis();
   }
-  if (millis() - printTime > printInterval) // Every 800 milliseconds, print a numerical, convert the state of the LED indicator
-  {
 
-    Serial.print("Voltage:");
-    Serial.print(voltagepH, 2);
-    Serial.print("    pH value: ");
-    Serial.println(pHValue, 3);
+  // Check if it is time to print the processed data
+  if (millis() - printTime > printInterval)
+  {
+    // Print the processed data to the monitor
+    printData("pH", voltagepH, pHValue);
+
+    // Send the processed data to the NodeMCU
+    sendData(pHValue);
+
+    // Update the print time
     printTime = millis();
   }
+}
 
-  if (uno.available() > 0)
+void printData(String name, float voltageData, float data)
+{
+  // Print the name, voltage, and data of the sensor to the monitor
+  Serial.print(name);
+  Serial.print(" = ");
+  Serial.print("Voltage: ");
+  Serial.print(voltageData, 2);
+  Serial.print(" , ");
+  Serial.print("Value: ");
+  Serial.println(data, 3);
+
+  // Delay to allow time for the data to be printed
+  delay(500);
+}
+
+void sendData(float data)
+{
+  // Check if the software serial port is available
+  if (portSerial.available() > 0)
   {
-    uno.write(pHValue); // mengirim data ke nodemcu
-    uno.write(kekeruhan);
+    // Send the data to the NodeMCU
+    portSerial.write(data);
   }
-
-}
-void loop()
-{
-
-  
 }
 
-double avergearray(int *arr, int number)
+double averageArray(int *arr, int number)
 {
+  // Declare variables
   int i;
   int max, min;
   double avg;
   long amount = 0;
+
+  // Check if the number of elements in the array is valid
   if (number <= 0)
   {
-    Serial.println("Error number for the array to avraging!/n");
+    // Print error message and return 0 if number is invalid
+    Serial.println("Error: Invalid number of elements in array!");
     return 0;
   }
   if (number < 5)
-  { // less than 5, calculated directly statistics
+  {
+    // Calculate average directly if number of elements is less than 5
     for (i = 0; i < number; i++)
     {
       amount += arr[i];
@@ -112,6 +154,7 @@ double avergearray(int *arr, int number)
   }
   else
   {
+    // Find the minimum and maximum values in the array
     if (arr[0] < arr[1])
     {
       min = arr[0];
@@ -126,23 +169,27 @@ double avergearray(int *arr, int number)
     {
       if (arr[i] < min)
       {
-        amount += min; // arr<min
+        // Update min and add value to amount
+        amount += min;
         min = arr[i];
       }
       else
       {
         if (arr[i] > max)
         {
-          amount += max; // arr>max
+          // Update max and add value to amount
+          amount += max;
           max = arr[i];
         }
         else
         {
-          amount += arr[i]; // min<=arr<=max
+          // Add value to amount
+          amount += arr[i];
         }
-      } // if
-    }   // for
+      }
+    }
+    // Calculate average by summing all elements except for min and max and dividing by number of elements minus 2
     avg = (double)amount / (number - 2);
-  } 
+  }
   return avg;
 }

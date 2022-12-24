@@ -8,10 +8,10 @@
         {
             "name": "PlatformIO",
             "includePath": [
-                "/home/kawaiii0_/Documents/PlatformIO/Projects/my_i-pond_master/include",
-                "/home/kawaiii0_/Documents/PlatformIO/Projects/my_i-pond_master/src",
+                "/home/kawaiii0_/project/My_I-pond/master/include",
+                "/home/kawaiii0_/project/My_I-pond/master/src",
                 "/home/kawaiii0_/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
-                "/home/kawaiii0_/Documents/PlatformIO/Projects/my_i-pond_master/.pio/libdeps/uno/OneWire",
+                "/home/kawaiii0_/project/My_I-pond/master/.pio/libdeps/uno/OneWire",
                 "/home/kawaiii0_/.platformio/packages/framework-arduino-avr/cores/arduino",
                 "/home/kawaiii0_/.platformio/packages/framework-arduino-avr/variants/standard",
                 "/home/kawaiii0_/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
@@ -23,10 +23,10 @@
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "/home/kawaiii0_/Documents/PlatformIO/Projects/my_i-pond_master/include",
-                    "/home/kawaiii0_/Documents/PlatformIO/Projects/my_i-pond_master/src",
+                    "/home/kawaiii0_/project/My_I-pond/master/include",
+                    "/home/kawaiii0_/project/My_I-pond/master/src",
                     "/home/kawaiii0_/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
-                    "/home/kawaiii0_/Documents/PlatformIO/Projects/my_i-pond_master/.pio/libdeps/uno/OneWire",
+                    "/home/kawaiii0_/project/My_I-pond/master/.pio/libdeps/uno/OneWire",
                     "/home/kawaiii0_/.platformio/packages/framework-arduino-avr/cores/arduino",
                     "/home/kawaiii0_/.platformio/packages/framework-arduino-avr/variants/standard",
                     "/home/kawaiii0_/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
