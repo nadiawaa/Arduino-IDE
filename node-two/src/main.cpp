@@ -35,6 +35,7 @@ DallasTemperature sensors(&oneWire);
 String name;
 float value;
 
+// Declare function
 void sendData_to_firebase(String name, float data);
 void measureTemp();
 void readData();
