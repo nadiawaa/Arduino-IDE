@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"name": "Node_one",
+			"path": "../../Node_one"
+		},
+		{
+			"name": "node_three",
+			"path": "../../node_three"
+		}
+	],
+	"settings": {}
+}
